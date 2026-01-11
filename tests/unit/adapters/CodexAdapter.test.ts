@@ -72,9 +72,9 @@ args = ["-y", "@anthropic/mcp-server-filesystem"]
 ALLOWED_PATHS = "/home/user/projects"
 `;
     const config = adapter.parseConfig(content);
-    expect(config.mcpServers.filesystem.command).toBe('npx');
-    expect(config.mcpServers.filesystem.args).toEqual(['-y', '@anthropic/mcp-server-filesystem']);
-    expect(config.mcpServers.filesystem.env.ALLOWED_PATHS).toBe('/home/user/projects');
+    expect(config.mcpServers!.filesystem.command).toBe('npx');
+    expect(config.mcpServers!.filesystem.args).toEqual(['-y', '@anthropic/mcp-server-filesystem']);
+    expect(config.mcpServers!.filesystem.env!.ALLOWED_PATHS).toBe('/home/user/projects');
   });
 
   it('should normalize TOML servers correctly', () => {

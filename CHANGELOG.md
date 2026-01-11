@@ -130,3 +130,101 @@
 
 **修复项**:
 - 修复 `BaseAdapter.test.ts` 中 TestAdapter 类定义时机问题（需在 beforeEach 中动态创建）
+
+### Phase 4: 主进程服务 - ✅ 已完成
+
+**完成时间**: 2026-01-11
+
+**创建的服务** (`src/main/services/`):
+- `ConfigService.ts` - 统一配置管理服务
+  - `loadAllConfigs()` - 加载所有 IDE 配置
+  - `loadConfig()` / `saveConfig()` - 单个 IDE 配置读写
+  - `toggleServer()` - 切换服务器启用状态
+  - `addServer()` / `removeServer()` / `updateServer()` - 服务器管理
+  - `getServer()` / `getServers()` - 获取服务器信息
+  - `getCachedConfig()` / `clearCache()` - 配置缓存管理
+  - `isIDEInstalled()` / `getInstalledIDEs()` - IDE 安装状态检测
+  - `createBackup()` / `restoreFromBackup()` - 备份操作
+- `BackupService.ts` - 备份服务 (Phase 3 已创建，Phase 4 继续使用)
+  - `createBackup()` / `restoreBackup()` - 备份创建与恢复
+  - `listBackups()` / `getBackupInfo()` - 备份列表与详情
+  - `deleteBackup()` / `deleteBackupsByType()` - 备份删除
+  - `getBackupStats()` / `getBackupSize()` - 备份统计
+- `ConfigWatcher.ts` - 文件监听服务 (Phase 3 已创建，Phase 4 继续使用)
+  - `watchConfig()` / `unwatchConfig()` / `unwatchIDE()` - 监听管理
+  - `refreshConfig()` - 刷新配置
+  - `checkConfigIntegrity()` - 配置完整性检查
+- `SyncConflictResolver.ts` - 同步冲突解决服务
+  - `detectConflicts()` - 检测配置冲突
+  - `previewSync()` - 预览同步操作
+  - `executeSync()` - 执行同步（支持 overwrite/merge/keep-target/manual 策略）
+  - `executeSyncToMultiple()` - 同步到多个目标
+
+**创建的 IPC 通信层** (`src/main/ipc/`):
+- `config.handlers.ts` - IPC 处理器
+  - 配置操作: `CONFIG_LOAD_ALL`, `CONFIG_LOAD_ONE`, `CONFIG_SAVE`, `CONFIG_REFRESH`
+  - 服务器操作: `SERVER_TOGGLE`, `SERVER_ADD`, `SERVER_REMOVE`, `SERVER_UPDATE`
+  - 同步操作: `SYNC_PREVIEW`, `SYNC_EXECUTE`, `SYNC_RESOLVE_CONFLICT`
+  - 备份操作: `BACKUP_CREATE`, `BACKUP_RESTORE`, `BACKUP_LIST`
+  - `setupConfigWatchers()` - 设置配置文件监听
+  - `removeConfigHandlers()` - 清理 IPC 处理器
+- `index.ts` - IPC 初始化入口
+  - `initializeIPC()` - 初始化所有 IPC 处理器和服务
+  - `cleanupIPC()` - 清理 IPC 和监听器
+
+**更新的文件**:
+- `src/preload/index.ts` - 预加载脚本
+  - 添加完整的 `electronAPI` 暴露给渲染进程
+  - `config` - 配置操作 API
+  - `server` - 服务器操作 API
+  - `sync` - 同步操作 API
+  - `backup` - 备份操作 API
+  - `onConfigChanged()` / `onSyncStatusUpdate()` - 事件监听
+- `src/preload/index.d.ts` - 预加载类型声明
+  - `ConfigAPI`, `ServerAPI`, `SyncAPI`, `BackupAPI` 接口定义
+- `src/main/index.ts` - 主进程入口
+  - 集成 IPC 初始化
+  - 添加应用退出时的清理逻辑
+
+**创建的单元测试** (`tests/unit/services/`):
+- `ConfigService.test.ts` - ConfigService 单元测试
+- `BackupService.test.ts` - BackupService 单元测试
+- `ConfigWatcher.test.ts` - ConfigWatcher 单元测试
+- `SyncConflictResolver.test.ts` - SyncConflictResolver 单元测试
+
+**创建的集成测试** (`tests/integration/`):
+- `sync.test.ts` - 同步流程集成测试
+  - 完整同步流程测试
+  - 冲突检测与解决测试
+  - 多目标同步测试
+  - 服务器管理流程测试
+  - 各种同步策略测试 (overwrite/keep-target/merge)
+- `backup.test.ts` - 备份流程集成测试
+  - 备份生命周期测试
+  - 备份统计测试
+  - 备份清理测试
+- `ipc.test.ts` - IPC 通信集成测试
+  - 所有 IPC 处理器测试
+  - 错误处理测试
+  - 清理流程测试
+
+**Phase 4 实现的核心功能**:
+1. **ConfigService** - 聚合所有适配器操作，提供统一的配置管理 API
+2. **SyncConflictResolver** - 智能冲突检测，支持 4 种解决策略
+3. **IPC 通信层** - 主进程与渲染进程的完整通信桥梁
+4. **Preload API** - 类型安全的前端 API 接口
+
+**测试结果**:
+- ✅ `npm run test:unit` - 276 个单元测试全部通过
+- ✅ `npm run test:integration` - 33 个集成测试全部通过
+- ✅ 总测试数: 309 个测试用例，全部通过
+- ✅ 服务覆盖率: 92.79% 语句覆盖率（超过 80% 目标）
+  - ConfigService: 91.61%
+  - BackupService: 93.09%
+  - ConfigWatcher: 89.8%
+  - SyncConflictResolver: 95.32%
+
+**修复项**:
+- 修复 `ConfigService.test.ts` 中 mock 对象共享导致的测试干扰问题（使用工厂函数创建新实例）
+- 修复 `sync.test.ts` 中 mock 路径不匹配问题（使用 `@main/adapters` 别名 + globalThis 模式共享状态）
+- 修复 `backup.test.ts` 中 vitest mock hoisting 问题（简化测试策略）

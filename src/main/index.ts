@@ -1,8 +1,11 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { initializeIPC, cleanupIPC } from './ipc'
+import { ConfigWatcher } from './services/ConfigWatcher'
 
 let mainWindow: BrowserWindow | null = null
+let configWatcher: ConfigWatcher | null = null
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -49,14 +52,33 @@ app.whenReady().then(() => {
 
   createWindow()
 
+  // Initialize IPC handlers after window is created
+  const getMainWindow = () => mainWindow
+  const ipcResult = initializeIPC(getMainWindow)
+  configWatcher = ipcResult.configWatcher
+
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
 app.on('window-all-closed', () => {
+  // Cleanup IPC handlers and watchers
+  if (configWatcher) {
+    cleanupIPC(configWatcher)
+    configWatcher = null
+  }
+
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+// Handle app quit
+app.on('before-quit', () => {
+  if (configWatcher) {
+    cleanupIPC(configWatcher)
+    configWatcher = null
   }
 })
 

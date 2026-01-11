@@ -75,7 +75,7 @@ describe('ClaudeDesktopAdapter', () => {
       }
     });
     const config = adapter.parseConfig(content);
-    expect(config.mcpServers.filesystem.command).toBe('npx');
+    expect(config.mcpServers!.filesystem.command).toBe('npx');
   });
 
   it('should normalize servers correctly', () => {

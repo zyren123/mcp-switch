@@ -79,7 +79,7 @@ describe('BaseAdapter', () => {
       const adapter = new TestAdapter();
       const content = '{"mcpServers": {"test": {"command": "node"}}}';
       const result = adapter.parseConfig(content);
-      expect(result.mcpServers.test.command).toBe('node');
+      expect(result.mcpServers!.test.command).toBe('node');
     });
 
     it('should throw on invalid JSON', () => {

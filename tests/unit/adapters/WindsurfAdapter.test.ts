@@ -71,6 +71,6 @@ describe('WindsurfAdapter', () => {
       }
     });
     const config = adapter.parseConfig(content);
-    expect(config.mcpServers.test.env.TOKEN).toBe('${env:MY_TOKEN}');
+    expect(config.mcpServers!.test.env!.TOKEN).toBe('${env:MY_TOKEN}');
   });
 });

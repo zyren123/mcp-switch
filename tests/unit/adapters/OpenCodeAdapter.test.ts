@@ -72,7 +72,7 @@ describe('OpenCodeAdapter', () => {
       }
     }`;
     const config = adapter.parseConfig(content);
-    expect(config.mcpServers.test.command).toBe('node');
+    expect(config.mcpServers!.test.command).toBe('node');
   });
 
   it('should parse JSONC with trailing commas', () => {
@@ -86,8 +86,8 @@ describe('OpenCodeAdapter', () => {
       },
     }`;
     const config = adapter.parseConfig(content);
-    expect(config.mcpServers.test.command).toBe('node');
-    expect(config.mcpServers.test.args).toEqual(['--flag']);
+    expect(config.mcpServers!.test.command).toBe('node');
+    expect(config.mcpServers!.test.args).toEqual(['--flag']);
   });
 
   it('should handle {env:VAR} syntax in config', () => {
@@ -101,6 +101,6 @@ describe('OpenCodeAdapter', () => {
       }
     });
     const config = adapter.parseConfig(content);
-    expect(config.mcpServers.test.env.SECRET).toBe('{env:MY_SECRET}');
+    expect(config.mcpServers!.test.env!.SECRET).toBe('{env:MY_SECRET}');
   });
 });
