@@ -5,6 +5,7 @@ import { ConfigService } from '@main/services/ConfigService';
 import { BackupService } from '@main/services/BackupService';
 import { SyncConflictResolver } from '@main/services/SyncConflictResolver';
 import { ConfigWatcher } from '@main/services/ConfigWatcher';
+import { ImportExportService } from '@main/services/ImportExportService';
 import { IPC_CHANNELS } from '@shared/types';
 
 // Mock electron
@@ -13,7 +14,11 @@ vi.mock('electron', () => ({
     handle: vi.fn(),
     removeHandler: vi.fn()
   },
-  BrowserWindow: vi.fn()
+  BrowserWindow: vi.fn(),
+  dialog: {
+    showSaveDialog: vi.fn(),
+    showOpenDialog: vi.fn()
+  }
 }));
 
 // Mock services
@@ -21,12 +26,14 @@ vi.mock('../../../src/main/services/ConfigService');
 vi.mock('../../../src/main/services/BackupService');
 vi.mock('../../../src/main/services/SyncConflictResolver');
 vi.mock('../../../src/main/services/ConfigWatcher');
+vi.mock('../../../src/main/services/ImportExportService');
 
 describe('IPC Integration', () => {
   let mockConfigService: any;
   let mockBackupService: any;
   let mockSyncResolver: any;
   let mockConfigWatcher: any;
+  let mockImportExportService: any;
   let mockMainWindow: any;
   let handlers: Record<string, Function>;
 
@@ -71,6 +78,14 @@ describe('IPC Integration', () => {
       watchConfig: vi.fn()
     };
 
+    mockImportExportService = {
+      exportConfig: vi.fn().mockResolvedValue({ success: true, filePath: '/path/to/export.json' }),
+      importConfig: vi.fn().mockResolvedValue({ success: true, config: { servers: [] } }),
+      exportBatch: vi.fn().mockResolvedValue({ success: true, filePath: '/path/to/batch.json', exportedCount: 3, errors: [] }),
+      importBatch: vi.fn().mockResolvedValue({ success: true, importedCount: 3, errors: [] }),
+      exportAll: vi.fn().mockResolvedValue({ success: true, filePath: '/path/to/all.json', exportedCount: 6, errors: [] })
+    };
+
     mockMainWindow = {
       webContents: {
         send: vi.fn()
@@ -84,6 +99,7 @@ describe('IPC Integration', () => {
       mockBackupService,
       mockSyncResolver,
       mockConfigWatcher,
+      mockImportExportService,
       () => mockMainWindow
     );
   });

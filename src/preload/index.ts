@@ -44,7 +44,10 @@ const electronAPI = {
   // Import/Export operations
   importExport: {
     exportConfig: (ideType: string) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_EXPORT, ideType),
-    importConfig: (ideType: string) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_IMPORT, ideType)
+    importConfig: (ideType: string) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_IMPORT, ideType),
+    exportBatch: (ideTypes: string[]) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_EXPORT_BATCH, ideTypes),
+    importBatch: () => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_IMPORT_BATCH),
+    exportAll: () => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_EXPORT_ALL)
   },
 
   // Event listeners

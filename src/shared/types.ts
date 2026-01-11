@@ -91,6 +91,9 @@ export const IPC_CHANNELS = {
   // 导入/导出操作
   CONFIG_EXPORT: 'config:export',
   CONFIG_IMPORT: 'config:import',
+  CONFIG_EXPORT_BATCH: 'config:export-batch',
+  CONFIG_IMPORT_BATCH: 'config:import-batch',
+  CONFIG_EXPORT_ALL: 'config:export-all',
 
   // 事件通知
   CONFIG_CHANGED: 'config:changed',

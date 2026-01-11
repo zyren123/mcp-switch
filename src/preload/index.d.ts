@@ -31,3 +31,11 @@ export interface BackupAPI {
   restore: (ideType: string, backupId: string) => Promise<{ success: boolean; error?: string }>
   list: (ideType?: string) => Promise<{ success: boolean; data?: any[]; error?: string }>
 }
+
+export interface ImportExportAPI {
+  exportConfig: (ideType: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
+  importConfig: (ideType: string) => Promise<{ success: boolean; config?: any; error?: string }>
+  exportBatch: (ideTypes: string[]) => Promise<{ success: boolean; filePath?: string; exportedCount: number; errors: Array<{ ideType: string; error: string }> }>
+  importBatch: () => Promise<{ success: boolean; importedCount: number; errors: Array<{ ideType: string; error: string }> }>
+  exportAll: () => Promise<{ success: boolean; filePath?: string; exportedCount: number; errors: Array<{ ideType: string; error: string }> }>
+}

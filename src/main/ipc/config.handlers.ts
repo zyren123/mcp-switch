@@ -93,6 +93,42 @@ export const registerConfigHandlers = (
     }
   });
 
+  /**
+   * Export batch configurations
+   */
+  ipcMain.handle(IPC_CHANNELS.CONFIG_EXPORT_BATCH, async (_, ideTypes: IDEType[]) => {
+    try {
+      const result = await importExportService.exportBatch(ideTypes);
+      return result;
+    } catch (error: any) {
+      return { success: false, exportedCount: 0, errors: [{ ideType: ideTypes[0], error: error.message }] };
+    }
+  });
+
+  /**
+   * Import batch configurations
+   */
+  ipcMain.handle(IPC_CHANNELS.CONFIG_IMPORT_BATCH, async () => {
+    try {
+      const result = await importExportService.importBatch();
+      return result;
+    } catch (error: any) {
+      return { success: false, importedCount: 0, errors: [{ ideType: 'claude-desktop', error: error.message }] };
+    }
+  });
+
+  /**
+   * Export all configurations
+   */
+  ipcMain.handle(IPC_CHANNELS.CONFIG_EXPORT_ALL, async () => {
+    try {
+      const result = await importExportService.exportAll();
+      return result;
+    } catch (error: any) {
+      return { success: false, exportedCount: 0, errors: [{ ideType: 'claude-desktop', error: error.message }] };
+    }
+  });
+
   // ============================================
   // Server Operations
   // ============================================

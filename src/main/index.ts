@@ -4,10 +4,12 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { initializeIPC, cleanupIPC } from './ipc'
 import { ConfigWatcher } from './services/ConfigWatcher'
 import { TrayGenerator } from './tray'
+import { ConfigService } from './services/ConfigService'
 
 let mainWindow: BrowserWindow | null = null
 let configWatcher: ConfigWatcher | null = null
 let trayGenerator: TrayGenerator | null = null
+let configService: ConfigService | null = null
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -30,6 +32,14 @@ function createWindow(): void {
     mainWindow?.show()
   })
 
+  // Minimize to tray instead of closing (unless quitting)
+  mainWindow.on('close', (event) => {
+    if (trayGenerator && !trayGenerator.getIsQuitting()) {
+      event.preventDefault()
+      mainWindow?.hide()
+    }
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -43,7 +53,24 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(() => {
+/**
+ * Update tray with current config state
+ */
+async function updateTrayState(): Promise<void> {
+  if (!trayGenerator || !configService) return
+
+  try {
+    const configs = await configService.loadAllConfigs()
+    const installedIDEs = configs.filter(c => c.isInstalled)
+    const totalServers = installedIDEs.reduce((sum, c) => sum + c.servers.length, 0)
+
+    trayGenerator.setCounts(installedIDEs.length, totalServers)
+  } catch (error) {
+    console.error('Failed to update tray state:', error)
+  }
+}
+
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.mcp-switch.app')
 
@@ -58,6 +85,16 @@ app.whenReady().then(() => {
   const getMainWindow = () => mainWindow
   const ipcResult = initializeIPC(getMainWindow)
   configWatcher = ipcResult.configWatcher
+  configService = ipcResult.configService
+
+  // Create system tray
+  if (mainWindow) {
+    trayGenerator = new TrayGenerator(mainWindow)
+    trayGenerator.createTray()
+
+    // Update tray state with current config info
+    await updateTrayState()
+  }
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -78,10 +115,21 @@ app.on('window-all-closed', () => {
 
 // Handle app quit
 app.on('before-quit', () => {
+  // Mark as quitting so close event doesn't prevent quit
+  if (trayGenerator) {
+    trayGenerator.setIsQuitting(true)
+  }
+
   if (configWatcher) {
     cleanupIPC(configWatcher)
     configWatcher = null
   }
+
+  // Destroy tray
+  if (trayGenerator) {
+    trayGenerator.destroy()
+    trayGenerator = null
+  }
 })
 
-export { mainWindow }
+export { mainWindow, trayGenerator, updateTrayState }

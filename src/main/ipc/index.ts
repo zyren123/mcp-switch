@@ -3,10 +3,11 @@ import { ConfigService } from '../services/ConfigService';
 import { BackupService } from '../services/BackupService';
 import { SyncConflictResolver } from '../services/SyncConflictResolver';
 import { ConfigWatcher } from '../services/ConfigWatcher';
-import { 
-  registerConfigHandlers, 
+import { ImportExportService } from '../services/ImportExportService';
+import {
+  registerConfigHandlers,
   setupConfigWatchers,
-  removeConfigHandlers 
+  removeConfigHandlers
 } from './config.handlers';
 
 /**
@@ -17,6 +18,7 @@ export interface IPCInitResult {
   backupService: BackupService;
   syncResolver: SyncConflictResolver;
   configWatcher: ConfigWatcher;
+  importExportService: ImportExportService;
 }
 
 /**
@@ -30,6 +32,7 @@ export const initializeIPC = (
   const configService = new ConfigService(backupService);
   const syncResolver = new SyncConflictResolver(configService, backupService);
   const configWatcher = new ConfigWatcher();
+  const importExportService = new ImportExportService(configService);
 
   // Register IPC handlers
   registerConfigHandlers(
@@ -37,6 +40,7 @@ export const initializeIPC = (
     backupService,
     syncResolver,
     configWatcher,
+    importExportService,
     getMainWindow
   );
 
@@ -47,7 +51,8 @@ export const initializeIPC = (
     configService,
     backupService,
     syncResolver,
-    configWatcher
+    configWatcher,
+    importExportService
   };
 };
 

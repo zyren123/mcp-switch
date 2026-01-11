@@ -276,3 +276,87 @@
 - ✅ `npm run test:unit` - 所有组件和 Store 测试通过
 - ✅ UI 交互逻辑覆盖率满足要求
 
+### Phase 6: 高级功能 - ✅ 已完成
+
+**完成时间**: 2026-01-11
+
+**6.1 系统托盘支持** (`src/main/tray.ts`):
+- `TrayGenerator` 类 - 完整的系统托盘管理
+  - `createTray()` - 创建托盘图标和菜单
+  - `updateState()` - 更新托盘状态（IDE数量、服务器数量、同步状态）
+  - `setStatus()` - 设置同步状态指示器（normal/syncing/error）
+  - `setCounts()` - 设置 IDE 和服务器计数
+  - `setLastSyncTime()` - 设置最后同步时间
+  - `getIsQuitting()` / `setIsQuitting()` - 退出状态管理
+  - `destroy()` - 销毁托盘
+- 功能特性:
+  - 最小化到托盘（关闭窗口时隐藏而非退出）
+  - 托盘右键菜单（显示应用、IDE/服务器计数、快速同步、退出）
+  - 托盘图标工具提示显示当前状态
+  - 跨平台图标支持（Windows/macOS/Linux）
+  - 点击托盘图标切换窗口显示/隐藏
+
+**6.2 配置导入/导出** (`src/main/services/ImportExportService.ts`):
+- 单个 IDE 导入/导出:
+  - `exportConfig(ideType)` - 导出单个 IDE 配置到 JSON 文件
+  - `importConfig(ideType)` - 从 JSON 文件导入配置到指定 IDE
+- 批量导入/导出:
+  - `exportBatch(ideTypes)` - 批量导出多个 IDE 配置
+  - `importBatch()` - 从批量备份文件导入所有配置
+  - `exportAll()` - 导出所有已安装 IDE 的配置
+- 导出文件格式:
+  - 版本控制 (`version: "1.0"`)
+  - 导出时间戳 (`exportedAt`)
+  - 配置数组（包含 ideType、displayName、servers）
+- 安全特性:
+  - 导入前自动创建备份
+  - 验证导入文件格式
+  - 检查 IDE 是否已安装
+
+**更新的 IPC 通道** (`src/shared/types.ts`):
+- `CONFIG_EXPORT` - 导出单个配置
+- `CONFIG_IMPORT` - 导入单个配置
+- `CONFIG_EXPORT_BATCH` - 批量导出
+- `CONFIG_IMPORT_BATCH` - 批量导入
+- `CONFIG_EXPORT_ALL` - 导出全部
+
+**更新的 IPC 处理器** (`src/main/ipc/config.handlers.ts`):
+- 添加所有导入/导出相关的 IPC 处理器
+- 错误处理和结果返回
+
+**更新的预加载脚本** (`src/preload/index.ts`):
+- `importExport.exportConfig()` - 导出配置 API
+- `importExport.importConfig()` - 导入配置 API
+- `importExport.exportBatch()` - 批量导出 API
+- `importExport.importBatch()` - 批量导入 API
+- `importExport.exportAll()` - 导出全部 API
+
+**更新的主进程** (`src/main/index.ts`):
+- 集成 TrayGenerator 创建和管理
+- 实现最小化到托盘逻辑
+- 应用启动时更新托盘状态（IDE/服务器计数）
+- 应用退出时正确清理托盘
+
+**更新的 IPC 初始化** (`src/main/ipc/index.ts`):
+- 创建 ImportExportService 实例
+- 将服务传递给 IPC 处理器注册
+
+**创建的测试文件**:
+- `tests/unit/tray.test.ts` - TrayGenerator 单元测试 (23 个测试)
+  - 托盘创建测试
+  - 状态更新测试
+  - 窗口切换测试
+  - 退出状态测试
+- `tests/integration/import-export.test.ts` - 导入导出集成测试 (16 个测试)
+  - 单个 IDE 导入/导出测试
+  - 批量导入/导出测试
+  - 错误处理测试
+  - 取消操作测试
+
+**测试结果**:
+- ✅ `npm run test:unit` - 327 个单元测试全部通过
+- ✅ `npm run test:integration` - 376 个测试全部通过（包含单元+集成）
+- ✅ `npm run typecheck` - TypeScript 类型检查通过
+- ✅ `npm run build` - 构建成功
+- ✅ TrayGenerator 覆盖率: 93.1%
+
