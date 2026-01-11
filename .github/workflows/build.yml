@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      # Run tests (Unit & Integration)
+      - name: Run Tests
+        # Linux requires xvfb for GUI tests
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install --no-install-recommends -y libopenal1 libvorbisfile3
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- npm run test
+        
+      - name: Run Tests (Win/Mac)
+        if: runner.os != 'Linux'
+        run: npm run test
+
+      # Build & Release
+      - name: Build and Package (Windows)
+        if: runner.os == 'Windows'
+        run: npm run package:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Package (macOS)
+        if: runner.os == 'macOS'
+        run: npm run package:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Package (Linux)
+        if: runner.os == 'Linux'
+        run: npm run package:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+      # Upload Artifacts (for manual inspection or non-tag builds)
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.os }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
+          if-no-files-found: ignore
