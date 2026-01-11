@@ -4,6 +4,7 @@ import { ConfigService } from '../services/ConfigService';
 import { BackupService } from '../services/BackupService';
 import { SyncConflictResolver, SyncStrategy, ConflictResolution } from '../services/SyncConflictResolver';
 import { ConfigWatcher } from '../services/ConfigWatcher';
+import { ImportExportService } from '../services/ImportExportService';
 
 /**
  * Register all config-related IPC handlers
@@ -13,6 +14,7 @@ export const registerConfigHandlers = (
   backupService: BackupService,
   syncResolver: SyncConflictResolver,
   configWatcher: ConfigWatcher,
+  importExportService: ImportExportService,
   getMainWindow: () => BrowserWindow | null
 ): void => {
   // ============================================
@@ -61,6 +63,30 @@ export const registerConfigHandlers = (
   ipcMain.handle(IPC_CHANNELS.CONFIG_REFRESH, async (_, ideType: IDEType) => {
     try {
       const result = await configWatcher.refreshConfig(ideType);
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  /**
+   * Export configuration
+   */
+  ipcMain.handle(IPC_CHANNELS.CONFIG_EXPORT, async (_, ideType: IDEType) => {
+    try {
+      const result = await importExportService.exportConfig(ideType);
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  /**
+   * Import configuration
+   */
+  ipcMain.handle(IPC_CHANNELS.CONFIG_IMPORT, async (_, ideType: IDEType) => {
+    try {
+      const result = await importExportService.importConfig(ideType);
       return result;
     } catch (error: any) {
       return { success: false, error: error.message };

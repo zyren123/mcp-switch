@@ -3,9 +3,11 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { initializeIPC, cleanupIPC } from './ipc'
 import { ConfigWatcher } from './services/ConfigWatcher'
+import { TrayGenerator } from './tray'
 
 let mainWindow: BrowserWindow | null = null
 let configWatcher: ConfigWatcher | null = null
+let trayGenerator: TrayGenerator | null = null
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({

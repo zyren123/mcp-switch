@@ -392,7 +392,8 @@ describe('Sync Integration', () => {
       expect(config.servers).toHaveLength(3);
       // Server A should be from target (original)
       const serverAResult = config.servers.find((s: MCPServer) => s.id === 'server-a');
-      expect(serverAResult.command).toBe('npx'); // Original from target
+      expect(serverAResult).toBeDefined();
+      expect(serverAResult!.command).toBe('npx'); // Original from target
       // Server B added from source
       expect(config.servers.find((s: MCPServer) => s.id === 'server-b')).toBeDefined();
       // Server C kept from target
@@ -412,7 +413,8 @@ describe('Sync Integration', () => {
       expect(config.servers).toHaveLength(3);
       // Server A should be from source (wins conflicts)
       const serverAResult = config.servers.find((s: MCPServer) => s.id === 'server-a');
-      expect(serverAResult.command).toBe('source-command');
+      expect(serverAResult).toBeDefined();
+      expect(serverAResult!.command).toBe('source-command');
       // Server B from source
       expect(config.servers.find((s: MCPServer) => s.id === 'server-b')).toBeDefined();
       // Server C kept from target

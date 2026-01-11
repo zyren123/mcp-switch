@@ -88,6 +88,10 @@ export const IPC_CHANNELS = {
   BACKUP_RESTORE: 'backup:restore',
   BACKUP_LIST: 'backup:list',
 
+  // 导入/导出操作
+  CONFIG_EXPORT: 'config:export',
+  CONFIG_IMPORT: 'config:import',
+
   // 事件通知
   CONFIG_CHANGED: 'config:changed',
   SYNC_STATUS_UPDATE: 'sync:status-update',

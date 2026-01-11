@@ -1,4 +1,5 @@
 import { beforeAll, afterAll, vi } from 'vitest';
+import '@testing-library/jest-dom';
 
 // Mock electron
 vi.mock('electron', () => ({

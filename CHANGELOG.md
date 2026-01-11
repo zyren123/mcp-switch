@@ -228,3 +228,51 @@
 - 修复 `ConfigService.test.ts` 中 mock 对象共享导致的测试干扰问题（使用工厂函数创建新实例）
 - 修复 `sync.test.ts` 中 mock 路径不匹配问题（使用 `@main/adapters` 别名 + globalThis 模式共享状态）
 - 修复 `backup.test.ts` 中 vitest mock hoisting 问题（简化测试策略）
+
+### Phase 5: 前端 UI - ✅ 已完成
+
+**完成时间**: 2026-01-11
+
+**创建的状态管理** (`src/renderer/stores/`):
+- `useConfigStore.ts` - 配置状态管理
+  - `configs` - 所有 IDE 配置
+  - `selectedIDE` - 当前选中的 IDE
+  - `toggleServer()` / `addServer()` / `removeServer()` / `updateServer()` - 乐观更新 UI
+- `useSyncStore.ts` - 同步状态管理
+  - `sourceIDE` / `targetIDEs` - 同步源和目标
+  - `syncStatus` - 同步状态机 (idle/previewing/syncing/completed/error)
+  - `previewSync()` - 触发预览
+  - `executeSync()` - 执行同步
+
+**创建的组件** (`src/renderer/components/`):
+- `layout/`
+  - `MainLayout.tsx` - 主布局容器
+  - `Header.tsx` - 顶部导航栏
+  - `Sidebar.tsx` - 侧边栏 IDE 列表
+- `ide/`
+  - `IDEList.tsx` - 仪表盘 IDE 网格视图
+  - `IDECard.tsx` - 单个 IDE 卡片
+- `server/`
+  - `ServerList.tsx` - 服务器列表管理
+  - `ServerCard.tsx` - 服务器配置卡片（支持开关、编辑、删除）
+- `sync/`
+  - `SyncPanel.tsx` - 同步操作面板（源/目标选择、策略选择）
+  - `SyncPreview.tsx` - 变更预览组件
+- `conflict/`
+  - `ConflictResolver.tsx` - 冲突解决对话框
+  - `ConflictItem.tsx` - 单个冲突项解决 UI
+
+**集成** (`src/renderer/`):
+- `App.tsx` - 应用入口，整合路由视图切换
+- `hooks/useIPC.ts` - IPC 连接状态钩子
+
+**创建的组件测试** (`tests/unit/components/`):
+- `IDEComponents.test.tsx` - IDE 列表与卡片测试
+- `ServerComponents.test.tsx` - 服务器管理测试
+- `SyncComponents.test.tsx` - 同步面板与预览测试
+- `ConflictComponents.test.tsx` - 冲突解决测试
+
+**测试结果**:
+- ✅ `npm run test:unit` - 所有组件和 Store 测试通过
+- ✅ UI 交互逻辑覆盖率满足要求
+
