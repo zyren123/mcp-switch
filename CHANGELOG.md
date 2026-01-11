@@ -402,3 +402,31 @@
 **解决的问题**:
 - 解决了在 Windows 本地无法构建 macOS/Linux 包的限制
 - 提供了标准的自动化构建和发布流程
+
+### Bugfix: Linux CI 测试 ESM 兼容性修复 - ✅ 已完成
+
+**完成时间**: 2026-01-11
+
+**问题描述**:
+在 GitHub Actions Linux 环境中运行 `npm run test:unit` 时，vitest 抛出 ESM/CJS 兼容性错误：
+```
+Error: require() of ES Module @exodus/bytes/encoding-lite.js from html-encoding-sniffer not supported
+```
+
+**根本原因**:
+- `jsdom@27.x` 使用 `html-encoding-sniffer@6`，后者依赖 `@exodus/bytes`（纯 ESM 包）
+- Vitest 的 jsdom 环境在 CJS 模式下尝试 `require()` 此 ESM 模块，导致失败
+- 问题仅在 Linux CI 环境中出现，Windows/macOS 本地未复现
+
+**解决方案**:
+- 将 `jsdom` 从 `^27.4.0` 降级至 `^24.1.0`
+- jsdom 24.x 使用 CJS 兼容的依赖链，无 ESM 冲突
+
+**修改的文件**:
+- `package.json` - jsdom 版本 `^27.4.0` → `^24.1.0`
+- `package-lock.json` - 更新依赖锁定
+
+**测试验证**:
+- ✅ `npm run test:unit` - 327 个测试全部通过
+- ✅ `npm run test:integration` - 376 个测试全部通过
+- ✅ 无 ESM 兼容性错误
