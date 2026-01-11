@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-filesystem"],
+      "env": {
+        "ALLOWED_PATHS": "${ALLOWED_PATHS:-/home/user}"
+      }
+    }
+  }
+}

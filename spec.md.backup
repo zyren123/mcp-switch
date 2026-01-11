@@ -1,0 +1,158 @@
+# MCP Switch - MCP配置管理工具实现计划
+
+## 项目概述
+一个图形化桌面应用，用于统一管理多个IDE/CLI的MCP Server配置，支持一键同步和可视化开关控制。
+
+## 支持的工具
+| 工具 | 配置文件路径 (Windows) |
+|------|----------------------|
+| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Claude Code CLI | `~/.claude/settings.json` |
+| Cursor | `%APPDATA%\Cursor\User\globalStorage\mcp.json` |
+| Cline (VS Code) | `%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json` |
+| Windsurf | `%APPDATA%\Windsurf\mcp_config.json` |
+| Codex CLI | `~/.codex/config.json` |
+| OpenCode | `~/.opencode/config.json` |
+
+## 技术栈
+- **框架**: Electron 28 + electron-vite
+- **前端**: React 18 + TypeScript
+- **UI**: Shadcn/ui + Tailwind CSS
+- **状态管理**: Zustand
+- **打包**: electron-builder
+
+---
+
+## 项目结构
+
+```
+mcp-switch/
+├── package.json
+├── electron.vite.config.ts
+├── electron-builder.yml
+├── tailwind.config.js
+├── src/
+│   ├── main/                    # Electron主进程
+│   │   ├── index.ts             # 入口
+│   │   ├── ipc/                 # IPC处理器
+│   │   ├── services/            # 核心服务
+│   │   │   ├── ConfigService.ts
+│   │   │   ├── FileWatcher.ts
+│   │   │   └── BackupService.ts
+│   │   ├── adapters/            # IDE配置适配器
+│   │   │   ├── BaseAdapter.ts
+│   │   │   ├── ClaudeDesktopAdapter.ts
+│   │   │   ├── ClaudeCodeAdapter.ts
+│   │   │   ├── CursorAdapter.ts
+│   │   │   ├── ClineAdapter.ts
+│   │   │   ├── WindsurfAdapter.ts
+│   │   │   ├── CodexAdapter.ts
+│   │   │   └── OpenCodeAdapter.ts
+│   │   └── utils/
+│   ├── preload/                 # 预加载脚本
+│   │   └── index.ts
+│   └── renderer/                # React前端
+│       ├── App.tsx
+│       ├── components/
+│       │   ├── ui/              # Shadcn组件
+│       │   ├── layout/
+│       │   ├── ide/             # IDE列表组件
+│       │   ├── server/          # 服务器卡片组件
+│       │   └── sync/            # 同步面板组件
+│       ├── stores/              # Zustand状态
+│       └── types/               # TypeScript类型
+└── resources/                   # 图标资源
+```
+
+---
+
+## 实现步骤
+
+### Phase 1: 项目初始化
+1. 使用 electron-vite 创建项目
+2. 配置 Tailwind CSS
+3. 安装 Shadcn/ui 组件
+4. 设置项目目录结构
+
+### Phase 2: 核心数据模型
+创建 `src/renderer/types/mcp.ts`:
+```typescript
+interface MCPServer {
+  id: string;
+  name: string;
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+  enabled: boolean;
+}
+
+type IDEType = 'claude-desktop' | 'claude-code' | 'cursor' | 'cline' | 'windsurf' | 'codex' | 'opencode';
+
+interface IDEConfig {
+  type: IDEType;
+  name: string;
+  configPath: string;
+  isInstalled: boolean;
+  servers: MCPServer[];
+}
+```
+
+### Phase 3: 配置适配器
+1. 创建 `BaseAdapter` 抽象类
+2. 为每个IDE实现具体适配器：
+   - 路径解析
+   - 配置读取/写入
+   - 格式转换
+
+### Phase 4: 主进程服务
+1. `ConfigService` - 统一配置管理
+2. `FileWatcher` - 监听配置变化
+3. `BackupService` - 备份管理
+4. IPC通信层
+
+### Phase 5: 前端UI
+1. 布局组件 (Header, Sidebar)
+2. IDE列表组件
+3. 服务器卡片组件（带开关）
+4. 同步面板组件
+5. Zustand状态管理
+
+### Phase 6: 高级功能
+1. 系统托盘支持
+2. 配置文件监听
+3. 导入/导出功能
+
+### Phase 7: 打包发布
+1. 配置 electron-builder
+2. 生成Windows安装包
+
+---
+
+## 核心功能规格
+
+### 同步功能
+- **默认模式**: 覆盖 (源IDE配置完全替换目标)
+- **流程**: 选择源IDE → 选择目标IDE(可多选) → 预览 → 同步
+- **自动备份**: 同步前自动备份目标配置
+
+### 服务器开关
+- 对每个IDE可单独开关某个MCP Server
+- 开关状态直接写入对应IDE的配置文件
+
+### 系统托盘
+- 最小化到托盘
+- 右键菜单快速访问
+- 显示已配置的IDE数量
+
+---
+
+## 关键文件清单
+
+| 文件 | 用途 |
+|------|------|
+| `src/main/adapters/BaseAdapter.ts` | 适配器基类 |
+| `src/main/services/ConfigService.ts` | 核心配置服务 |
+| `src/main/ipc/config.handlers.ts` | IPC处理器 |
+| `src/renderer/stores/useConfigStore.ts` | 状态管理 |
+| `src/renderer/components/sync/SyncPanel.tsx` | 同步面板UI |
+| `src/renderer/components/server/ServerCard.tsx` | 服务器卡片UI |

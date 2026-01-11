@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "test": {
+      "command": "node"
+      // missing closing braces

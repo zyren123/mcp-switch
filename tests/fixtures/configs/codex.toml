@@ -1,0 +1,13 @@
+[mcpServers.filesystem]
+command = "npx"
+args = ["-y", "@anthropic/mcp-server-filesystem"]
+
+[mcpServers.filesystem.env]
+ALLOWED_PATHS = "/home/user/projects"
+
+[mcpServers.github]
+command = "npx"
+args = ["-y", "@anthropic/mcp-server-github"]
+
+[mcpServers.github.env]
+GITHUB_TOKEN = "token_placeholder"

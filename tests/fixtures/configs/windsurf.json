@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "windsurf-server": {
+      "command": "npx",
+      "args": ["-y", "windsurf-mcp"],
+      "env": {
+        "API_KEY": "${env:WINDSURF_API_KEY}"
+      }
+    }
+  }
+}

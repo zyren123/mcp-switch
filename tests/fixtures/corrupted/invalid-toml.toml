@@ -1,0 +1,3 @@
+[mcpServers.test
+command = "node"
+# invalid TOML - missing closing bracket

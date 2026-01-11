@@ -1,0 +1,12 @@
+{
+  // OpenCode configuration with JSONC support
+  "mcpServers": {
+    "opencode-server": {
+      "command": "node",
+      "args": ["--experimental-modules", "server.mjs"],
+      "env": {
+        "SECRET": "{env:OPENCODE_SECRET}",
+      },
+    },
+  },
+}

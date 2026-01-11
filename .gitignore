@@ -1,0 +1,30 @@
+node_modules
+
+# Build outputs
+dist/
+out/
+
+# Vite
+*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# Temp files
+*.tmp
+*.swp
+.claude/settings.local.json
+/.serena
